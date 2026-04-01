@@ -1,0 +1,53 @@
+# ---- Streamlit ----
+# Keep config, ignore only secrets
+.streamlit/secrets.toml
+
+# ---- Environment / secrets ----
+.env
+.env.*
+*.env
+*.secret
+*.pem
+*.key
+
+# ---- Logs & DBs ----
+*.log
+*.db
+*.sqlite3
+
+# ---- Python caches / artifacts ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+build/
+dist/
+pip-wheel-metadata/
+
+# ---- Virtual envs ----
+.venv/
+venv/
+env/
+
+# ---- Testing / coverage ----
+.pytest_cache/
+.coverage*
+htmlcov/
+
+# ---- Type check / linters ----
+.mypy_cache/
+.pyre/
+.ruff_cache/
+
+# ---- Notebooks ----
+.ipynb_checkpoints/
+
+# ---- Editors / OS ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
