@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from core.image_loader import LoadedImage
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from core.image_loader import LoadedImage
 
 
 @dataclass(slots=True)
