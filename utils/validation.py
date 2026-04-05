@@ -28,20 +28,31 @@ def build_validation_summary(
     width, height = atlas_size
     atlas_area = width * height
     count = len(images)
-    total_area = sum(img.width * img.height for img in images)
+
+    total_area = 0
+    max_w = 0
+    max_h = 0
+    for img in images:
+        w = img.width
+        h = img.height
+        total_area += w * h
+        if w > max_w:
+            max_w = w
+        if h > max_h:
+            max_h = h
 
     if count > 0:
         total_area += border * 2 * (width + height)
-        total_area += padding * max(0, count - 1) * min(width, height)
+        total_area += padding * (count - 1) * min(width, height)
 
     fill = (total_area / atlas_area * 100.0) if atlas_area > 0 else 0.0
 
     warnings: list[str] = []
     if fill > 100:
         warnings.append("Estimated usage exceeds atlas area. Packing will likely fail.")
-    if images and max(i.width for i in images) > width - (2 * border):
+    if count > 0 and max_w > width - (2 * border):
         warnings.append("At least one image is wider than available atlas width.")
-    if images and max(i.height for i in images) > height - (2 * border):
+    if count > 0 and max_h > height - (2 * border):
         warnings.append("At least one image is taller than available atlas height.")
 
     return ValidationSummary(
