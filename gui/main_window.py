@@ -110,8 +110,8 @@ class MainWindow:
         summary = build_validation_summary(
             self.images,
             self._get_atlas_size(),
-            int(values["border"]),
-            int(values["padding"]),
+            values["border"],
+            values["padding"],
         )
         self._show_validation_summary(summary)
 
@@ -144,12 +144,12 @@ class MainWindow:
                     self.images,
                     self._get_atlas_size(),
                     str(values["packing_mode"]),
-                    int(values["border"]),
-                    int(values["padding"]),
+                    values["border"],
+                    values["padding"],
                     str(values["background"]),
                     str(values["oversize_rule"]),
                     str(values["fixed_mode"]),
-                    int(values["fixed_value"]),
+                    values["fixed_value"],
                 )
             except Exception as exc:  # noqa: BLE001
                 self.root.after(0, lambda: messagebox.showerror("Packing Error", str(exc)))

@@ -7,11 +7,14 @@ from PIL import Image
 
 def parse_atlas_size(preset: str, custom_width: str, custom_height: str) -> tuple[int, int]:
     """Return selected atlas size from preset or custom values."""
-    if preset.lower() == "custom":
-        return int(custom_width), int(custom_height)
+    try:
+        if preset.lower() == "custom":
+            return int(custom_width), int(custom_height)
 
-    width, height = preset.lower().split("x")
-    return int(width), int(height)
+        width, height = preset.lower().split("x")
+        return int(width), int(height)
+    except (ValueError, TypeError, AttributeError):
+        return 1024, 1024
 
 
 def background_to_rgba(background_mode: str) -> tuple[int, int, int, int]:
