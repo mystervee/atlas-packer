@@ -114,6 +114,13 @@ class SettingsPanel(ttk.LabelFrame):
 
         self.columnconfigure(1, weight=1)
 
+    def _int_or_default(self, value: str, default: int) -> int:
+        """Safely convert string to int with a fallback."""
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return default
+
     def get_settings(self) -> dict[str, object]:
         """Collect typed settings values from controls."""
         return {
@@ -121,11 +128,11 @@ class SettingsPanel(ttk.LabelFrame):
             "custom_w": self.custom_w_var.get(),
             "custom_h": self.custom_h_var.get(),
             "background": self.background_var.get(),
-            "border": int(self.border_var.get() or 0),
-            "padding": int(self.padding_var.get() or 0),
+            "border": self._int_or_default(self.border_var.get(), 0),
+            "padding": self._int_or_default(self.padding_var.get(), 0),
             "packing_mode": self.packing_mode_var.get(),
             "fixed_mode": self.fixed_mode_var.get(),
-            "fixed_value": int(self.fixed_value_var.get() or 1),
+            "fixed_value": self._int_or_default(self.fixed_value_var.get(), 1),
             "oversize_rule": self.oversize_rule_var.get(),
             "export_metadata": bool(self.export_metadata_var.get()),
             "export_format": self.export_format_var.get(),
