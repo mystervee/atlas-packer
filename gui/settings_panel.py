@@ -29,50 +29,65 @@ class SettingsPanel(ttk.LabelFrame):
 
         self._build()
 
+    def _add_combobox_row(
+        self, row: int, label_text: str, variable: tk.Variable, values: list[str], width: int = 15, sticky: str = "ew"
+    ) -> None:
+        """Add a row with a label and a combobox."""
+        ttk.Label(self, text=label_text).grid(row=row, column=0, sticky="w", padx=6, pady=4)
+        ttk.Combobox(self, textvariable=variable, values=values, state="readonly", width=width).grid(
+            row=row, column=1, sticky=sticky, padx=6, pady=4
+        )
+
+    def _add_entry_row(self, row: int, label_text: str, variable: tk.Variable, width: int = 10) -> None:
+        """Add a row with a label and an entry."""
+        ttk.Label(self, text=label_text).grid(row=row, column=0, sticky="w", padx=6, pady=4)
+        ttk.Entry(self, textvariable=variable, width=width).grid(row=row, column=1, sticky="ew", padx=6, pady=4)
+
+    def _add_spinbox_row(
+        self, row: int, label_text: str, variable: tk.Variable, from_: int, to: int, width: int = 8, sticky: str = "w"
+    ) -> None:
+        """Add a row with a label and a spinbox."""
+        ttk.Label(self, text=label_text).grid(row=row, column=0, sticky="w", padx=6, pady=4)
+        ttk.Spinbox(self, from_=from_, to=to, textvariable=variable, width=width).grid(
+            row=row, column=1, sticky=sticky, padx=6, pady=4
+        )
+
+    def _add_radio_group_row(self, row: int, label_text: str, variable: tk.Variable, options: list[str]) -> None:
+        """Add a row with a label and a group of radio buttons."""
+        ttk.Label(self, text=label_text).grid(row=row, column=0, sticky="w", padx=6, pady=4)
+        frame = ttk.Frame(self)
+        frame.grid(row=row, column=1, sticky="w", padx=6, pady=4)
+        for option in options:
+            ttk.Radiobutton(frame, text=option, value=option, variable=variable).pack(side="left")
+
     def _build(self) -> None:
         """Lay out all setting controls in a compact form."""
         row = 0
-        ttk.Label(self, text="Atlas Preset:").grid(row=row, column=0, sticky="w", padx=6, pady=4)
-        ttk.Combobox(self, textvariable=self.preset_var, values=self.PRESETS, state="readonly", width=15).grid(
-            row=row, column=1, sticky="ew", padx=6, pady=4
-        )
+        self._add_combobox_row(row, "Atlas Preset:", self.preset_var, self.PRESETS)
 
         row += 1
-        ttk.Label(self, text="Custom Width:").grid(row=row, column=0, sticky="w", padx=6, pady=4)
-        ttk.Entry(self, textvariable=self.custom_w_var, width=10).grid(row=row, column=1, sticky="ew", padx=6, pady=4)
+        self._add_entry_row(row, "Custom Width:", self.custom_w_var)
 
         row += 1
-        ttk.Label(self, text="Custom Height:").grid(row=row, column=0, sticky="w", padx=6, pady=4)
-        ttk.Entry(self, textvariable=self.custom_h_var, width=10).grid(row=row, column=1, sticky="ew", padx=6, pady=4)
+        self._add_entry_row(row, "Custom Height:", self.custom_h_var)
 
         row += 1
-        ttk.Label(self, text="Background:").grid(row=row, column=0, sticky="w", padx=6, pady=4)
-        bg_row = ttk.Frame(self)
-        bg_row.grid(row=row, column=1, sticky="w", padx=6, pady=4)
-        for text in ("Transparent", "Black", "White"):
-            ttk.Radiobutton(bg_row, text=text, value=text, variable=self.background_var).pack(side="left")
+        self._add_radio_group_row(row, "Background:", self.background_var, ["Transparent", "Black", "White"])
 
         row += 1
-        ttk.Label(self, text="Outer Border:").grid(row=row, column=0, sticky="w", padx=6, pady=4)
-        ttk.Spinbox(self, from_=0, to=256, textvariable=self.border_var, width=8).grid(
-            row=row, column=1, sticky="w", padx=6, pady=4
-        )
+        self._add_spinbox_row(row, "Outer Border:", self.border_var, 0, 256)
 
         row += 1
-        ttk.Label(self, text="Padding:").grid(row=row, column=0, sticky="w", padx=6, pady=4)
-        ttk.Spinbox(self, from_=0, to=256, textvariable=self.padding_var, width=8).grid(
-            row=row, column=1, sticky="w", padx=6, pady=4
-        )
+        self._add_spinbox_row(row, "Padding:", self.padding_var, 0, 256)
 
         row += 1
-        ttk.Label(self, text="Packing Mode:").grid(row=row, column=0, sticky="w", padx=6, pady=4)
-        ttk.Combobox(
-            self,
-            textvariable=self.packing_mode_var,
-            values=["Grid packing", "Tight packing", "Fixed columns or rows"],
-            state="readonly",
+        self._add_combobox_row(
+            row,
+            "Packing Mode:",
+            self.packing_mode_var,
+            ["Grid packing", "Tight packing", "Fixed columns or rows"],
             width=20,
-        ).grid(row=row, column=1, sticky="ew", padx=6, pady=4)
+        )
 
         row += 1
         ttk.Label(self, text="Fixed Layout:").grid(row=row, column=0, sticky="w", padx=6, pady=4)
@@ -83,27 +98,14 @@ class SettingsPanel(ttk.LabelFrame):
         ttk.Spinbox(fixed_frame, from_=1, to=256, textvariable=self.fixed_value_var, width=5).pack(side="left", padx=(6, 0))
 
         row += 1
-        ttk.Label(self, text="Oversize Rule:").grid(row=row, column=0, sticky="w", padx=6, pady=4)
-        over_frame = ttk.Frame(self)
-        over_frame.grid(row=row, column=1, sticky="w", padx=6, pady=4)
-        ttk.Radiobutton(over_frame, text="Scale to fit", value="Scale to fit", variable=self.oversize_rule_var).pack(side="left")
-        ttk.Radiobutton(
-            over_frame,
-            text="Reject with warning",
-            value="Reject with warning",
-            variable=self.oversize_rule_var,
-        ).pack(side="left")
-        ttk.Radiobutton(over_frame, text="Crop", value="Crop", variable=self.oversize_rule_var).pack(side="left")
+        self._add_radio_group_row(
+            row, "Oversize Rule:", self.oversize_rule_var, ["Scale to fit", "Reject with warning", "Crop"]
+        )
 
         row += 1
-        ttk.Label(self, text="Export Format:").grid(row=row, column=0, sticky="w", padx=6, pady=4)
-        ttk.Combobox(
-            self,
-            textvariable=self.export_format_var,
-            values=["PNG", "TGA", "JPG", "WEBP"],
-            state="readonly",
-            width=8,
-        ).grid(row=row, column=1, sticky="w", padx=6, pady=4)
+        self._add_combobox_row(
+            row, "Export Format:", self.export_format_var, ["PNG", "TGA", "JPG", "WEBP"], width=8, sticky="w"
+        )
 
         row += 1
         ttk.Checkbutton(self, text="Export metadata JSON", variable=self.export_metadata_var).grid(
