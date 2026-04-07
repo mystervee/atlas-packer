@@ -224,18 +224,12 @@ class AtlasPacker:
         ordered = sorted(images, key=lambda img: img.height, reverse=True)
 
         for loaded in ordered:
-            sprite_w = loaded.width
-            sprite_h = loaded.height
+            processed = self._apply_oversize_rule(loaded.image, max_w, max_h, oversize_rule)
+            if processed is None:
+                warnings.append(f"Skipped {loaded.name}: larger than atlas bounds.")
+                continue
 
-            if sprite_w > max_w or sprite_h > max_h:
-                if oversize_rule == "Scale to fit":
-                    scaled = fit_image(loaded.image, max_w, max_h)
-                    sprite_w, sprite_h = scaled.width, scaled.height
-                elif oversize_rule == "Crop":
-                    sprite_w, sprite_h = min(sprite_w, max_w), min(sprite_h, max_h)
-                else:
-                    warnings.append(f"Skipped {loaded.name}: larger than atlas bounds.")
-                    continue
+            sprite_w, sprite_h = processed.width, processed.height
 
             if x + sprite_w > width - border:
                 x = border
