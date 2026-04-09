@@ -25,6 +25,7 @@ class PreviewCanvas(ttk.Frame):
         self._placements: dict[str, SpritePlacement] = {}
         self._image_id: int | None = None
         self._highlight_id: int | None = None
+        self._render_job: str | None = None
 
         self.canvas.bind("<MouseWheel>", self._on_zoom)
         self.canvas.bind("<ButtonPress-2>", self._on_pan_start)
@@ -59,8 +60,17 @@ class PreviewCanvas(ttk.Frame):
             width=2,
         )
 
+    def _schedule_render(self) -> None:
+        """Schedule rendering with debounce to prevent UI freezing."""
+        if self._render_job is not None:
+            self.after_cancel(self._render_job)
+        # 50ms delay is usually enough to batch fast wheel scroll events
+        self._render_job = self.after(50, self._render)
+
     def _render(self) -> None:
         """Render atlas image according to current zoom value."""
+        self._render_job = None
+
         if self._base_image is None:
             self.canvas.delete("all")
             return
@@ -80,7 +90,7 @@ class PreviewCanvas(ttk.Frame):
             self._zoom = min(8.0, self._zoom * 1.1)
         else:
             self._zoom = max(0.1, self._zoom / 1.1)
-        self._render()
+        self._schedule_render()
 
     def _on_pan_start(self, event: tk.Event) -> None:
         """Start drag pan operation."""
