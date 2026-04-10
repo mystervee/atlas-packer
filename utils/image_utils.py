@@ -5,11 +5,20 @@ from __future__ import annotations
 from PIL import Image
 
 
+MAX_ATLAS_SIZE = 16384
+MIN_ATLAS_SIZE = 1
+
 def parse_atlas_size(preset: str, custom_width: str, custom_height: str) -> tuple[int, int]:
     """Return selected atlas size from preset or custom values."""
     try:
         if preset.lower() == "custom":
-            return int(custom_width), int(custom_height)
+            w = int(custom_width)
+            h = int(custom_height)
+
+            w = max(MIN_ATLAS_SIZE, min(w, MAX_ATLAS_SIZE))
+            h = max(MIN_ATLAS_SIZE, min(h, MAX_ATLAS_SIZE))
+
+            return w, h
 
         width, height = preset.lower().split("x")
         return int(width), int(height)

@@ -56,5 +56,15 @@ class TestSecurityFix(unittest.TestCase):
         self.assertEqual(parse_atlas_size("Custom", "512", "not_a_number"), (1024, 1024))
         self.assertEqual(parse_atlas_size(None, "512", "512"), (1024, 1024))
 
+    def test_parse_atlas_size_clamping(self):
+        # Test lower bounds
+        self.assertEqual(parse_atlas_size("Custom", "0", "0"), (1, 1))
+        self.assertEqual(parse_atlas_size("Custom", "-100", "-50"), (1, 1))
+
+        # Test upper bounds
+        self.assertEqual(parse_atlas_size("Custom", "99999", "99999"), (16384, 16384))
+        self.assertEqual(parse_atlas_size("Custom", "16385", "100"), (16384, 100))
+        self.assertEqual(parse_atlas_size("Custom", "100", "16385"), (100, 16384))
+
 if __name__ == "__main__":
     unittest.main()
