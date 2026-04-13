@@ -1,5 +1,6 @@
 import timeit
 import random
+from tests.test_utils import MockImage
 
 def build_validation_summary_original(
     images,
@@ -65,11 +66,6 @@ def build_validation_summary_optimized(
         warnings.append("At least one image is taller than available atlas height.")
 
     return total_area, fill, warnings
-
-class MockImage:
-    def __init__(self, w, h):
-        self.width = w
-        self.height = h
 
 def run_benchmark():
     num_images = 100000

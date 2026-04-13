@@ -9,11 +9,7 @@ sys.modules["PIL.Image"] = mock_pil
 import timeit
 import random
 from utils.validation import build_validation_summary
-
-class MockImage:
-    def __init__(self, w, h):
-        self.width = w
-        self.height = h
+from tests.test_utils import MockImage
 
 def run_benchmark():
     num_images = 100000

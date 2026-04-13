@@ -1,13 +1,8 @@
 import timeit
 import random
-from dataclasses import dataclass
 from typing import List
 from utils.validation import build_validation_summary
-
-@dataclass
-class MockImage:
-    width: int
-    height: int
+from tests.test_utils import MockImage
 
 def run_benchmark():
     # Setup data
