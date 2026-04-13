@@ -38,9 +38,16 @@ def background_to_rgba(background_mode: str) -> tuple[int, int, int, int]:
 
 def fit_image(image: Image.Image, width: int, height: int) -> Image.Image:
     """Scale image to fit target size while preserving aspect ratio."""
-    source = image.copy()
-    source.thumbnail((width, height), Image.Resampling.LANCZOS)
-    return source
+    img_w, img_h = image.size
+    if img_w <= width and img_h <= height:
+        return image.copy()
+
+    # Calculate scale ratio to fit within target dimensions while preserving aspect ratio
+    ratio = min(width / img_w, height / img_h)
+    new_w = max(1, int(img_w * ratio + 0.5))
+    new_h = max(1, int(img_h * ratio + 0.5))
+
+    return image.resize((new_w, new_h), Image.Resampling.LANCZOS)
 
 
 def crop_image(image: Image.Image, width: int, height: int) -> Image.Image:
