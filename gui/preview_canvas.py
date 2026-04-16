@@ -16,8 +16,16 @@ class PreviewCanvas(ttk.Frame):
     def __init__(self, master: tk.Widget) -> None:
         """Initialize canvas and interaction bindings."""
         super().__init__(master)
-        self.canvas = tk.Canvas(self, background="#1f1f1f", width=700, height=520)
-        self.canvas.pack(fill="both", expand=True)
+
+        toolbar = ttk.Frame(self)
+        toolbar.pack(side="top", fill="x")
+        ttk.Button(toolbar, text="Fit", command=self._reset_zoom).pack(side="left")
+
+        self._canvas_frame = ttk.Frame(self)
+        self._canvas_frame.pack(side="top", fill="both", expand=True)
+
+        self.canvas = tk.Canvas(self._canvas_frame, background="#1f1f1f", width=600, height=600)
+        self.canvas.place(relx=0.5, rely=0.5, anchor="center")
 
         self._zoom = 1.0
         self._base_image: Image.Image | None = None
@@ -33,7 +41,8 @@ class PreviewCanvas(ttk.Frame):
         self.canvas.bind("<B2-Motion>", self._on_pan_move)
         self.canvas.bind("<ButtonPress-3>", self._on_pan_start)
         self.canvas.bind("<B3-Motion>", self._on_pan_move)
-        self.canvas.bind("<Configure>", self._on_resize)
+        self.canvas.bind("<Configure>", self._on_canvas_resize)
+        self._canvas_frame.bind("<Configure>", self._on_frame_resize)
 
     def set_image(
         self, image: Image.Image, placements: dict[str, SpritePlacement]
@@ -69,6 +78,11 @@ class PreviewCanvas(ttk.Frame):
             width=2,
         )
 
+    def _reset_zoom(self) -> None:
+        """Reset zoom to fit the full image within the canvas."""
+        self._zoom = self._fit_zoom()
+        self._render()
+
     def _fit_zoom(self) -> float:
         """Return zoom level that fits the full image within the current canvas."""
         if self._base_image is None:
@@ -86,7 +100,13 @@ class PreviewCanvas(ttk.Frame):
         # 50ms delay is usually enough to batch fast wheel scroll events
         self._render_job = self.after(50, self._render)
 
-    def _on_resize(self, event: tk.Event) -> None:
+    def _on_frame_resize(self, event: tk.Event) -> None:
+        """Enforce square canvas by sizing to the smaller frame dimension."""
+        size = min(event.width, event.height)
+        self.canvas.configure(width=size, height=size)
+        # Canvas Configure event fires next, scheduling re-render via _on_canvas_resize
+
+    def _on_canvas_resize(self, event: tk.Event) -> None:
         """Handle canvas resize to update rendering region."""
         self._schedule_render()
 
@@ -113,9 +133,9 @@ class PreviewCanvas(ttk.Frame):
         cx = self.canvas.canvasx(0)
         cy = self.canvas.canvasy(0)
 
-        # Add a buffer (1x canvas dimensions) to avoid flickering when panning
-        buffer_x = cw
-        buffer_y = ch
+        # Add a buffer (0.5x canvas dimensions) to avoid pan flicker while keeping resize cost low
+        buffer_x = cw // 2
+        buffer_y = ch // 2
 
         left = max(0, cx - buffer_x)
         top = max(0, cy - buffer_y)
