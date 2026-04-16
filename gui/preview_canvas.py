@@ -41,7 +41,7 @@ class PreviewCanvas(ttk.Frame):
         """Load new atlas image and sprite placements into preview."""
         self._base_image = image
         self._placements = placements
-        self._zoom = 1.0
+        self._zoom = self._fit_zoom()
         self._render()
 
     def highlight(self, sprite_name: str) -> None:
@@ -68,6 +68,16 @@ class PreviewCanvas(ttk.Frame):
             outline="#ff4040",
             width=2,
         )
+
+    def _fit_zoom(self) -> float:
+        """Return zoom level that fits the full image within the current canvas."""
+        if self._base_image is None:
+            return 1.0
+        cw = self.canvas.winfo_width()
+        ch = self.canvas.winfo_height()
+        if cw <= 1 or ch <= 1:
+            return 1.0
+        return min(cw / self._base_image.width, ch / self._base_image.height)
 
     def _schedule_render(self) -> None:
         """Schedule rendering with debounce to prevent UI freezing."""
