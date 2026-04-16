@@ -20,6 +20,8 @@ class FileListPanel(ttk.Frame):
         on_import_files: Callable[[], None],
         on_drop_files: Callable[[list[str]], None],
         on_item_selected: Callable[[str], None],
+        on_remove_files: Callable[[list[str]], None],
+        on_clear_files: Callable[[], None],
     ) -> None:
         """Initialize file list widgets and event wiring."""
         super().__init__(master)
@@ -27,16 +29,25 @@ class FileListPanel(ttk.Frame):
         self.on_import_files = on_import_files
         self.on_drop_files = on_drop_files
         self.on_item_selected = on_item_selected
-        self.tree = ttk.Treeview(self, columns=("name", "size"), show="headings", height=14)
+        self.on_remove_files = on_remove_files
+        self.on_clear_files = on_clear_files
+        self.tree = ttk.Treeview(
+            self, columns=("name", "size"), show="headings",
+            height=14, selectmode="extended",
+        )
         self._build()
 
     def _build(self) -> None:
-        """Create import buttons and image treeview."""
-        button_row = ttk.Frame(self)
-        button_row.pack(fill="x", pady=(0, 6))
+        """Create import/remove buttons and image treeview."""
+        import_row = ttk.Frame(self)
+        import_row.pack(fill="x", pady=(0, 4))
+        ttk.Button(import_row, text="Import Folder", command=self.on_import_folder).pack(side="left", padx=(0, 6))
+        ttk.Button(import_row, text="Import Files", command=self.on_import_files).pack(side="left")
 
-        ttk.Button(button_row, text="Import Folder", command=self.on_import_folder).pack(side="left", padx=(0, 6))
-        ttk.Button(button_row, text="Import Files", command=self.on_import_files).pack(side="left")
+        manage_row = ttk.Frame(self)
+        manage_row.pack(fill="x", pady=(0, 6))
+        ttk.Button(manage_row, text="Remove File(s)", command=self._on_remove_clicked).pack(side="left", padx=(0, 6))
+        ttk.Button(manage_row, text="Clear File List", command=self.on_clear_files).pack(side="left")
 
         self.tree.heading("name", text="Filename")
         self.tree.heading("size", text="Dimensions")
@@ -64,6 +75,12 @@ class FileListPanel(ttk.Frame):
 
         self.tree.drop_target_register(dnd_files_token)
         self.tree.dnd_bind("<<Drop>>", self._on_drop)
+
+    def _on_remove_clicked(self) -> None:
+        """Forward selected filenames to the remove callback."""
+        selected = list(self.tree.selection())
+        if selected:
+            self.on_remove_files(selected)
 
     def _on_drop(self, event: tk.Event) -> None:
         """Handle dropped file paths and forward to import callback."""
