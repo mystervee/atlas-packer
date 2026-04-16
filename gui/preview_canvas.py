@@ -93,6 +93,21 @@ class PreviewCanvas(ttk.Frame):
             return 1.0
         return min(cw / self._base_image.width, ch / self._base_image.height)
 
+    @staticmethod
+    def _make_checkerboard(width: int, height: int, tile: int = 16) -> Image.Image:
+        """Return an RGBA checkerboard image of the given pixel dimensions."""
+        tile2 = tile * 2
+        cell = Image.new("RGBA", (tile2, tile2))
+        cell.paste((204, 204, 204, 255), (0,    0,    tile,  tile))   # light top-left
+        cell.paste((153, 153, 153, 255), (tile, 0,    tile2, tile))   # dark  top-right
+        cell.paste((153, 153, 153, 255), (0,    tile, tile,  tile2))  # dark  bottom-left
+        cell.paste((204, 204, 204, 255), (tile, tile, tile2, tile2))  # light bottom-right
+        bg = Image.new("RGBA", (width, height))
+        for y in range(0, height, tile2):
+            for x in range(0, width, tile2):
+                bg.paste(cell, (x, y))
+        return bg
+
     def _schedule_render(self) -> None:
         """Schedule rendering with debounce to prevent UI freezing."""
         if self._render_job is not None:
@@ -164,7 +179,16 @@ class PreviewCanvas(ttk.Frame):
             return
 
         resized = cropped.resize((target_w, target_h), Image.Resampling.NEAREST)
-        self._photo = ImageTk.PhotoImage(resized)
+
+        # Composite over checkerboard if the image has an alpha channel
+        if resized.mode == "RGBA":
+            display = Image.alpha_composite(
+                self._make_checkerboard(target_w, target_h), resized
+            )
+        else:
+            display = resized
+
+        self._photo = ImageTk.PhotoImage(display)
 
         self.canvas.delete("all")
 
