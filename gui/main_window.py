@@ -48,6 +48,8 @@ class MainWindow:
             on_import_files=self.import_files,
             on_drop_files=self.import_file_paths,
             on_item_selected=self.on_item_selected,
+            on_remove_files=self.remove_files,
+            on_clear_files=self.clear_files,
         )
         self.file_panel.pack(fill="both", expand=True)
         self.file_panel.attach_drop_support(dnd_files_token)
@@ -93,6 +95,17 @@ class MainWindow:
         for img in loaded:
             existing[img.name] = img
         self.images = sorted(existing.values(), key=lambda img: img.name.lower())
+        self.file_panel.populate(self.images)
+
+    def remove_files(self, names: list[str]) -> None:
+        """Remove the named images from the file list."""
+        name_set = set(names)
+        self.images = [img for img in self.images if img.name not in name_set]
+        self.file_panel.populate(self.images)
+
+    def clear_files(self) -> None:
+        """Remove all images from the file list."""
+        self.images = []
         self.file_panel.populate(self.images)
 
     def _get_atlas_size(self) -> tuple[int, int]:
